@@ -1,12 +1,12 @@
 
-FROM registry.access.redhat.com/ubi9/go-toolset@sha256:59ec4752cf86f0d0dd240b9e29c64d6ee560c28fc986171e126db1db216a246a as builder
+FROM registry.access.redhat.com/ubi9/go-toolset@sha256:2c17ce45c735ad308240139d807eeb22f4499fd90e883634ba5a191779f1ff94 as builder
 ARG TARGETARCH
 USER root
 WORKDIR /workspace
 COPY . .
 
 # renovate: datasource=github-releases depName=pulumi/pulumi
-ENV PULUMI_VERSION 3.234.0
+ENV PULUMI_VERSION 3.237.0
 ENV PULUMI_BASE_URL="https://github.com/pulumi/pulumi/releases/download/v${PULUMI_VERSION}/pulumi-v${PULUMI_VERSION}"
 ENV PULUMI_URL="${PULUMI_BASE_URL}-linux-x64.tar.gz"
 
@@ -19,7 +19,7 @@ RUN unset VERSION \
     && tar -xzvf pulumicli.tar.gz 
 
 # ubi 9.5-1732804088
-FROM registry.access.redhat.com/ubi9/ubi@sha256:38952545b5a9ddf145152f37b0da702d7d75fac1ddc52c5e14b03c7a77c51586
+FROM registry.access.redhat.com/ubi9/ubi@sha256:8ca59004c1c505bdabadd5202bd3363986f5bf873fcfb36f60561d7362fe52a7
 ARG TARGETARCH
 LABEL org.opencontainers.image.authors="Redhat Developer"
 
@@ -32,11 +32,11 @@ ENV AWS_SDK_LOAD_CONFIG=1 \
 
 # Pulumi plugins
 # renovate: datasource=github-releases depName=pulumi/pulumi-aws
-ARG PULUMI_AWS_VERSION=v7.28.0
+ARG PULUMI_AWS_VERSION=v7.29.0
 # renovate: datasource=github-releases depName=pulumi/pulumi-awsx
 ARG PULUMI_AWSX_VERSION=v3.5.0
 # renovate: datasource=github-releases depName=pulumi/pulumi-azure-native
-ARG PULUMI_AZURE_NATIVE_VERSION=v3.17.0
+ARG PULUMI_AZURE_NATIVE_VERSION=v3.18.0
 # renovate: datasource=github-releases depName=pulumi/pulumi-command
 ARG PULUMI_COMMAND_VERSION=v1.2.1
 # renovate: datasource=github-releases depName=pulumi/pulumi-tls
@@ -44,7 +44,7 @@ ARG PULUMI_TLS_VERSION=v5.3.1
 # renovate: datasource=github-releases depName=pulumi/pulumi-random
 ARG PULUMI_RANDOM_VERSION=v4.19.2
 # renovate: datasource=github-releases depName=pulumi/pulumi-aws-native
-ARG PULUMI_AWS_NATIVE_VERSION=v1.63.0
+ARG PULUMI_AWS_NATIVE_VERSION=v1.64.0
 # renovate: datasource=github-releases depName=pulumi/pulumi-gitlab
 ARG PULUMI_GITLAB_VERSION=v9.11.0
 

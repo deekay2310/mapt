@@ -1,6 +1,6 @@
 module github.com/redhat-developer/mapt
 
-go 1.25.8
+go 1.26.0
 
 replace (
 	github.com/charmbracelet/bubbles/v2 => charm.land/bubbles/v2 v2.1.0
@@ -12,7 +12,7 @@ require (
 	github.com/coocood/freecache v1.2.7
 	github.com/pulumi/pulumi-command/sdk v1.2.1
 	github.com/pulumi/pulumi-random/sdk/v4 v4.19.2
-	github.com/pulumi/pulumi/sdk/v3 v3.234.0
+	github.com/pulumi/pulumi/sdk/v3 v3.237.0
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.10.2
 )
@@ -27,24 +27,24 @@ require (
 	github.com/aws/amazon-ec2-instance-selector/v3 v3.1.3
 	github.com/aws/aws-sdk-go-v2 v1.41.7
 	github.com/aws/aws-sdk-go-v2/config v1.32.17
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.300.0
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.100.1
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.301.0
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.101.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.42.1
-	github.com/pulumi/pulumi-aws-native/sdk v1.63.0
-	github.com/pulumi/pulumi-aws/sdk/v7 v7.28.0
+	github.com/pulumi/pulumi-aws-native/sdk v1.64.0
+	github.com/pulumi/pulumi-aws/sdk/v7 v7.29.0
 	github.com/pulumi/pulumi-awsx/sdk/v3 v3.5.0
-	github.com/pulumi/pulumi-azure-native-sdk/authorization/v3 v3.17.0
-	github.com/pulumi/pulumi-azure-native-sdk/compute/v3 v3.17.0
-	github.com/pulumi/pulumi-azure-native-sdk/containerservice/v3 v3.17.0
-	github.com/pulumi/pulumi-azure-native-sdk/managedidentity/v3 v3.17.0
-	github.com/pulumi/pulumi-azure-native-sdk/network/v3 v3.17.0
-	github.com/pulumi/pulumi-azure-native-sdk/resources/v3 v3.17.0
-	github.com/pulumi/pulumi-azure-native-sdk/storage/v3 v3.17.0
+	github.com/pulumi/pulumi-azure-native-sdk/authorization/v3 v3.18.0
+	github.com/pulumi/pulumi-azure-native-sdk/compute/v3 v3.18.0
+	github.com/pulumi/pulumi-azure-native-sdk/containerservice/v3 v3.18.0
+	github.com/pulumi/pulumi-azure-native-sdk/managedidentity/v3 v3.18.0
+	github.com/pulumi/pulumi-azure-native-sdk/network/v3 v3.18.0
+	github.com/pulumi/pulumi-azure-native-sdk/resources/v3 v3.18.0
+	github.com/pulumi/pulumi-azure-native-sdk/storage/v3 v3.18.0
 	github.com/pulumi/pulumi-gitlab/sdk/v8 v8.11.0
 	github.com/pulumi/pulumi-tls/sdk/v5 v5.3.1
-	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f
-	k8s.io/apimachinery v0.35.4
-	k8s.io/client-go v0.35.4
+	golang.org/x/exp v0.0.0-20260508232706-74f9aab9d74a
+	k8s.io/apimachinery v0.36.0
+	k8s.io/client-go v0.36.0
 )
 
 require (
@@ -53,7 +53,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/pgavlin/fx/v2 v2.0.12 // indirect
-	github.com/pulumi/pulumi-azure-native-sdk/v3 v3.17.0 // indirect
+	github.com/pulumi/pulumi-azure-native-sdk/v3 v3.18.0 // indirect
 	github.com/pulumi/pulumi-docker/sdk/v4 v4.11.2 // indirect
 )
 
@@ -71,8 +71,8 @@ require (
 	github.com/oliveagle/jsonpath v0.1.4 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/sahilm/fuzzy v0.1.1 // indirect
-	golang.org/x/mod v0.35.0
-	golang.org/x/tools v0.44.0 // indirect
+	golang.org/x/mod v0.36.0
+	golang.org/x/tools v0.45.0 // indirect
 )
 
 require (
@@ -103,7 +103,7 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.0 // indirect
 	github.com/charmbracelet/x/ansi v0.11.7 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.15 // indirect
-	github.com/charmbracelet/x/exp/golden v0.0.0-20260503005035-c113ba3d2310 // indirect
+	github.com/charmbracelet/x/exp/golden v0.0.0-20260511125431-fe5d686e0c99 // indirect
 	github.com/charmbracelet/x/term v0.2.2 // indirect
 	github.com/clipperhouse/displaywidth v0.11.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
@@ -117,6 +117,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
+	github.com/golang/glog v1.2.5 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.29.0 // indirect
@@ -153,8 +154,8 @@ require (
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/zclconf/go-cty v1.18.1 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
-	go.opentelemetry.io/collector/featuregate v1.57.0 // indirect
-	go.opentelemetry.io/collector/pdata v1.56.0 // indirect
+	go.opentelemetry.io/collector/featuregate v1.58.0 // indirect
+	go.opentelemetry.io/collector/pdata v1.58.0 // indirect
 	go.opentelemetry.io/otel v1.43.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.43.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.43.0 // indirect
@@ -168,13 +169,13 @@ require (
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260504160031-60b97b32f348 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260504160031-60b97b32f348 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260511170946-3700d4141b60 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260511170946-3700d4141b60 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
-	k8s.io/kube-openapi v0.0.0-20260504175024-7bfe71ffdc10 // indirect
-	k8s.io/utils v0.0.0-20260319190234-28399d86e0b5 // indirect
+	k8s.io/kube-openapi v0.0.0-20260511211612-da4e56fe5676 // indirect
+	k8s.io/utils v0.0.0-20260507154919-ff6756f316d2 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.4.0 // indirect
@@ -220,11 +221,11 @@ require (
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
-	golang.org/x/crypto v0.50.0 // indirect
-	golang.org/x/net v0.53.0 // indirect
-	golang.org/x/sys v0.43.0 // indirect
-	golang.org/x/term v0.42.0 // indirect
-	golang.org/x/text v0.36.0 // indirect
+	golang.org/x/crypto v0.51.0 // indirect
+	golang.org/x/net v0.54.0 // indirect
+	golang.org/x/sys v0.44.0 // indirect
+	golang.org/x/term v0.43.0 // indirect
+	golang.org/x/text v0.37.0 // indirect
 	google.golang.org/grpc v1.81.0 // indirect
 	google.golang.org/protobuf v1.36.12-0.20260120151049-f2248ac996af // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
