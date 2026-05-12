@@ -3,20 +3,29 @@ package ibmcloud
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
+	"strings"
 
 	"github.com/redhat-developer/mapt/pkg/manager"
 	mc "github.com/redhat-developer/mapt/pkg/manager/context"
 	"github.com/redhat-developer/mapt/pkg/manager/credentials"
+	"github.com/redhat-developer/mapt/pkg/provider/aws/services/s3"
+	icConstants "github.com/redhat-developer/mapt/pkg/provider/ibmcloud/constants"
+	"github.com/redhat-developer/mapt/pkg/util/logging"
 )
 
 const (
-	LOCATION_ENV = "IC_REGION"
+	LOCATION_ENV    = "IC_REGION"
+	pulumiLocksPath = ".pulumi/locks"
 )
 
 type IBMCloud struct{}
 
 func (i *IBMCloud) Init(ctx context.Context, backedURL string) error {
+	if isS3Path(backedURL) {
+		return manageCOSRemoteState(backedURL)
+	}
 	return nil
 }
 
@@ -49,6 +58,119 @@ func GetClouProviderCredentials(fixedCredentials map[string]string) credentials.
 var (
 	DefaultCredentials = GetClouProviderCredentials(nil)
 )
+
+func isS3Path(backedURL string) bool {
+	return strings.HasPrefix(backedURL, "s3://")
+}
+
+func ensureHTTPS(endpoint string) string {
+	endpoint = strings.TrimSpace(endpoint)
+	if strings.HasPrefix(endpoint, "https://") {
+		return endpoint
+	}
+	if strings.HasPrefix(endpoint, "http://") {
+		return "https://" + strings.TrimPrefix(endpoint, "http://")
+	}
+	return "https://" + endpoint
+}
+
+func manageCOSRemoteState(backedURL string) error {
+	accessKey := os.Getenv(icConstants.EnvIBMCosAccessKeyID)
+	secretKey := os.Getenv(icConstants.EnvIBMCosSecretAccessKey)
+	endpoint := os.Getenv(icConstants.EnvIBMCosEndpoint)
+	region := os.Getenv(icConstants.EnvIBMCosRegion)
+
+	if accessKey == "" {
+		return fmt.Errorf("%s is required when using S3-compatible backend", icConstants.EnvIBMCosAccessKeyID)
+	}
+	if secretKey == "" {
+		return fmt.Errorf("%s is required when using S3-compatible backend", icConstants.EnvIBMCosSecretAccessKey)
+	}
+	if endpoint == "" {
+		return fmt.Errorf("%s is required when using S3-compatible backend", icConstants.EnvIBMCosEndpoint)
+	}
+	if region == "" {
+		return fmt.Errorf("%s is required when using S3-compatible backend", icConstants.EnvIBMCosRegion)
+	}
+
+	if err := os.Setenv("AWS_ACCESS_KEY_ID", accessKey); err != nil {
+		return err
+	}
+	if err := os.Setenv("AWS_SECRET_ACCESS_KEY", secretKey); err != nil {
+		return err
+	}
+	if err := os.Setenv("AWS_ENDPOINT_URL", ensureHTTPS(endpoint)); err != nil {
+		return err
+	}
+	if err := os.Setenv("AWS_REGION", region); err != nil {
+		return err
+	}
+	if err := os.Setenv("AWS_DEFAULT_REGION", region); err != nil {
+		return err
+	}
+	if err := os.Setenv("AWS_S3_USE_PATH_STYLE", "true"); err != nil {
+		return err
+	}
+	return nil
+}
+
+func parseS3BackedURL(mCtx *mc.Context) (*string, *string, error) {
+	if !strings.HasPrefix(mCtx.BackedURL(), "s3://") {
+		return nil, nil, fmt.Errorf("invalid S3 URI: must start with s3://")
+	}
+	u, err := url.Parse(mCtx.BackedURL())
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to parse S3 URI: %w", err)
+	}
+	key := strings.TrimPrefix(u.Path, "/")
+	return &u.Host, &key, nil
+}
+
+func DestroyStack(mCtx *mc.Context, stackName string) error {
+	logging.Debug("Running destroy operation")
+	if len(stackName) == 0 {
+		return fmt.Errorf("stackname is required")
+	}
+	if mCtx.IsForceDestroy() {
+		bucket, key, err := parseS3BackedURL(mCtx)
+		if err != nil {
+			logging.Error(err)
+		} else {
+			lockPathKey := fmt.Sprintf("%s/%s", *key, pulumiLocksPath)
+			if err := s3.Delete(mCtx.Context(), bucket, &lockPathKey); err != nil {
+				logging.Error(err)
+			}
+		}
+	}
+	stack := manager.Stack{
+		StackName:           mCtx.StackNameByProject(stackName),
+		ProjectName:         mCtx.ProjectName(),
+		BackedURL:           mCtx.BackedURL(),
+		ProviderCredentials: DefaultCredentials,
+	}
+	return manager.DestroyStack(mCtx, stack)
+}
+
+func CleanupState(mCtx *mc.Context) error {
+	if mCtx.IsKeepState() {
+		return nil
+	}
+
+	bucket, key, parseErr := parseS3BackedURL(mCtx)
+	if parseErr != nil {
+		logging.Warnf("Failed to parse S3 backend URL, skipping state cleanup: %v", parseErr)
+		return nil
+	}
+
+	logging.Infof("Cleaning up Pulumi state from s3://%s/%s", *bucket, *key)
+	if deleteErr := s3.Delete(mCtx.Context(), bucket, key); deleteErr != nil {
+		logging.Warnf("Failed to cleanup S3 state: %v", deleteErr)
+	} else {
+		logging.Info("Successfully cleaned up Pulumi state from S3")
+	}
+
+	return nil
+}
 
 func Destroy(mCtx *mc.Context, stackName string) error {
 	stack := manager.Stack{
