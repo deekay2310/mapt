@@ -1,0 +1,9 @@
+name: Test ppc64le runner
+on: workflow_dispatch
+
+jobs:
+  test:
+    runs-on: [self-hosted, ppc64le, linux]
+    steps:
+      - run: uname -m
+      - run: echo "Hello from ppc64le!"
