@@ -1,0 +1,9 @@
+name: Test s390x runner
+on: workflow_dispatch
+
+jobs:
+  test:
+    runs-on: [self-hosted, s390x, linux]
+    steps:
+      - run: uname -m
+      - run: echo "Hello from s390x!"
