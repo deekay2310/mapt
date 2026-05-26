@@ -217,6 +217,9 @@ func parseS3BackedURL(mCtx *mc.Context) (*string, *string, error) {
 		return nil, nil, fmt.Errorf("failed to parse S3 URI: %w", err)
 	}
 	key := strings.TrimPrefix(u.Path, "/")
+	if key == "" {
+		return nil, nil, fmt.Errorf("invalid S3 URI %q: missing object key after bucket name", mCtx.BackedURL())
+	}
 	return &u.Host, &key, nil
 }
 
