@@ -79,6 +79,9 @@ func manageCOSRemoteState(backedURL string) error {
 	secretKey := os.Getenv(icConstants.EnvIBMCosSecretAccessKey)
 	endpoint := os.Getenv(icConstants.EnvIBMCosEndpoint)
 	region := os.Getenv(icConstants.EnvIBMCosRegion)
+	if region == "" {
+		region = os.Getenv(LOCATION_ENV)
+	}
 
 	if accessKey == "" {
 		return fmt.Errorf("%s is required when using S3-compatible backend", icConstants.EnvIBMCosAccessKeyID)
@@ -86,11 +89,11 @@ func manageCOSRemoteState(backedURL string) error {
 	if secretKey == "" {
 		return fmt.Errorf("%s is required when using S3-compatible backend", icConstants.EnvIBMCosSecretAccessKey)
 	}
-	if endpoint == "" {
-		return fmt.Errorf("%s is required when using S3-compatible backend", icConstants.EnvIBMCosEndpoint)
-	}
 	if region == "" {
-		return fmt.Errorf("%s is required when using S3-compatible backend", icConstants.EnvIBMCosRegion)
+		return fmt.Errorf("either %s or %s is required when using S3-compatible backend", icConstants.EnvIBMCosRegion, LOCATION_ENV)
+	}
+	if endpoint == "" {
+		endpoint = fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", region)
 	}
 
 	if err := os.Setenv("AWS_ACCESS_KEY_ID", accessKey); err != nil {
