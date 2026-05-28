@@ -74,45 +74,44 @@ func ensureHTTPS(endpoint string) string {
 	return "https://" + endpoint
 }
 
+func requireEnv(name string) (string, error) {
+	v, ok := os.LookupEnv(name)
+	if !ok || v == "" {
+		return "", fmt.Errorf("%s is required when using S3-compatible backend", name)
+	}
+	return v, nil
+}
+
 func manageCOSRemoteState(backedURL string) error {
-	accessKey := os.Getenv(icConstants.EnvIBMCosAccessKeyID)
-	secretKey := os.Getenv(icConstants.EnvIBMCosSecretAccessKey)
-	endpoint := os.Getenv(icConstants.EnvIBMCosEndpoint)
-	region := os.Getenv(icConstants.EnvIBMCosRegion)
-	if region == "" {
-		region = os.Getenv(LOCATION_ENV)
+	accountID, err := requireEnv(icConstants.EnvIBMCloudAccount)
+	if err != nil {
+		return err
+	}
+	apiKey, err := requireEnv(icConstants.EnvIBMCloudAPIKey)
+	if err != nil {
+		return err
+	}
+	region, err := requireEnv(LOCATION_ENV)
+	if err != nil {
+		return err
 	}
 
-	if accessKey == "" {
-		return fmt.Errorf("%s is required when using S3-compatible backend", icConstants.EnvIBMCosAccessKeyID)
-	}
-	if secretKey == "" {
-		return fmt.Errorf("%s is required when using S3-compatible backend", icConstants.EnvIBMCosSecretAccessKey)
-	}
-	if region == "" {
-		return fmt.Errorf("either %s or %s is required when using S3-compatible backend", icConstants.EnvIBMCosRegion, LOCATION_ENV)
-	}
+	endpoint, _ := os.LookupEnv(icConstants.EnvIBMCosEndpoint)
 	if endpoint == "" {
 		endpoint = fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", region)
 	}
 
-	if err := os.Setenv("AWS_ACCESS_KEY_ID", accessKey); err != nil {
-		return err
-	}
-	if err := os.Setenv("AWS_SECRET_ACCESS_KEY", secretKey); err != nil {
-		return err
-	}
-	if err := os.Setenv("AWS_ENDPOINT_URL", ensureHTTPS(endpoint)); err != nil {
-		return err
-	}
-	if err := os.Setenv("AWS_REGION", region); err != nil {
-		return err
-	}
-	if err := os.Setenv("AWS_DEFAULT_REGION", region); err != nil {
-		return err
-	}
-	if err := os.Setenv("AWS_S3_USE_PATH_STYLE", "true"); err != nil {
-		return err
+	for k, v := range map[string]string{
+		"AWS_ACCESS_KEY_ID":     accountID,
+		"AWS_SECRET_ACCESS_KEY": apiKey,
+		"AWS_ENDPOINT_URL":      ensureHTTPS(endpoint),
+		"AWS_REGION":            region,
+		"AWS_DEFAULT_REGION":    region,
+		"AWS_S3_USE_PATH_STYLE": "true",
+	} {
+		if err := os.Setenv(k, v); err != nil {
+			return err
+		}
 	}
 	return nil
 }
