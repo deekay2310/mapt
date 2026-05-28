@@ -83,11 +83,11 @@ func requireEnv(name string) (string, error) {
 }
 
 func manageCOSRemoteState(backedURL string) error {
-	accountID, err := requireEnv(icConstants.EnvIBMCloudAccount)
+	accessKey, err := requireEnv(icConstants.EnvIBMCosAccessKeyID)
 	if err != nil {
 		return err
 	}
-	apiKey, err := requireEnv(icConstants.EnvIBMCloudAPIKey)
+	secretKey, err := requireEnv(icConstants.EnvIBMCosSecretAccessKey)
 	if err != nil {
 		return err
 	}
@@ -102,8 +102,8 @@ func manageCOSRemoteState(backedURL string) error {
 	}
 
 	for k, v := range map[string]string{
-		"AWS_ACCESS_KEY_ID":     accountID,
-		"AWS_SECRET_ACCESS_KEY": apiKey,
+		"AWS_ACCESS_KEY_ID":     accessKey,
+		"AWS_SECRET_ACCESS_KEY": secretKey,
 		"AWS_ENDPOINT_URL":      ensureHTTPS(endpoint),
 		"AWS_REGION":            region,
 		"AWS_DEFAULT_REGION":    region,
