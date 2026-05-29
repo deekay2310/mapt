@@ -23,8 +23,8 @@ const (
 type IBMCloud struct{}
 
 func (i *IBMCloud) Init(ctx context.Context, backedURL string) error {
-	if isS3Path(backedURL) {
-		return manageCOSRemoteState(backedURL)
+	if isCOSBackend(backedURL) {
+		return initCOSBackend(backedURL)
 	}
 	return nil
 }
@@ -59,8 +59,11 @@ var (
 	DefaultCredentials = GetClouProviderCredentials(nil)
 )
 
-func isS3Path(backedURL string) bool {
-	return strings.HasPrefix(backedURL, "s3://")
+const cosHostSuffix = "cloud-object-storage.appdomain.cloud"
+
+func isCOSBackend(backedURL string) bool {
+	return strings.HasPrefix(backedURL, "s3://") ||
+		strings.Contains(backedURL, cosHostSuffix)
 }
 
 func ensureHTTPS(endpoint string) string {
@@ -82,7 +85,25 @@ func requireEnv(name string) (string, error) {
 	return v, nil
 }
 
-func manageCOSRemoteState(backedURL string) error {
+func extractBucket(backedURL string) (string, error) {
+	u, err := url.Parse(backedURL)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse backed URL %q: %w", backedURL, err)
+	}
+	if strings.HasPrefix(backedURL, "s3://") {
+		if u.Host == "" {
+			return "", fmt.Errorf("backed URL %q missing bucket name (expected s3://bucket-name)", backedURL)
+		}
+		return u.Host, nil
+	}
+	bucket := strings.TrimPrefix(u.Path, "/")
+	if bucket == "" {
+		return "", fmt.Errorf("backed URL %q missing bucket name in path (expected https://<endpoint>/<bucket>)", backedURL)
+	}
+	return strings.SplitN(bucket, "/", 2)[0], nil
+}
+
+func initCOSBackend(backedURL string) error {
 	accessKey, err := requireEnv(icConstants.EnvIBMCosAccessKeyID)
 	if err != nil {
 		return err
@@ -101,6 +122,14 @@ func manageCOSRemoteState(backedURL string) error {
 		endpoint = fmt.Sprintf("s3.%s.cloud-object-storage.appdomain.cloud", region)
 	}
 
+	bucket, err := extractBucket(backedURL)
+	if err != nil {
+		return err
+	}
+
+	pulumiBackendURL := fmt.Sprintf("s3://%s?endpoint=%s&s3ForcePathStyle=true",
+		bucket, ensureHTTPS(endpoint))
+
 	for k, v := range map[string]string{
 		"AWS_ACCESS_KEY_ID":     accessKey,
 		"AWS_SECRET_ACCESS_KEY": secretKey,
@@ -108,25 +137,31 @@ func manageCOSRemoteState(backedURL string) error {
 		"AWS_REGION":            region,
 		"AWS_DEFAULT_REGION":    region,
 		"AWS_S3_USE_PATH_STYLE": "true",
+		"PULUMI_BACKEND_URL":    pulumiBackendURL,
 	} {
 		if err := os.Setenv(k, v); err != nil {
 			return err
 		}
 	}
+	logging.Debugf("COS backend configured: %s", pulumiBackendURL)
 	return nil
 }
 
-func parseS3BackedURL(mCtx *mc.Context) (*string, *string, error) {
-	if !strings.HasPrefix(mCtx.BackedURL(), "s3://") {
-		return nil, nil, fmt.Errorf("invalid S3 URI: must start with s3://")
+func parseCOSBackedURL(mCtx *mc.Context) (*string, *string, error) {
+	backendURL := os.Getenv("PULUMI_BACKEND_URL")
+	if backendURL == "" {
+		backendURL = mCtx.BackedURL()
 	}
-	u, err := url.Parse(mCtx.BackedURL())
+	if !strings.HasPrefix(backendURL, "s3://") {
+		return nil, nil, fmt.Errorf("invalid S3 URI %q: must start with s3://", backendURL)
+	}
+	u, err := url.Parse(backendURL)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to parse S3 URI: %w", err)
 	}
 	key := strings.TrimPrefix(u.Path, "/")
 	if key == "" {
-		return nil, nil, fmt.Errorf("invalid S3 URI %q: missing object key after bucket name", mCtx.BackedURL())
+		return nil, nil, fmt.Errorf("invalid S3 URI %q: missing object key after bucket name", backendURL)
 	}
 	return &u.Host, &key, nil
 }
@@ -137,7 +172,7 @@ func DestroyStack(mCtx *mc.Context, stackName string) error {
 		return fmt.Errorf("stackname is required")
 	}
 	if mCtx.IsForceDestroy() {
-		bucket, key, err := parseS3BackedURL(mCtx)
+		bucket, key, err := parseCOSBackedURL(mCtx)
 		if err != nil {
 			logging.Error(err)
 		} else {
@@ -161,7 +196,7 @@ func CleanupState(mCtx *mc.Context) error {
 		return nil
 	}
 
-	bucket, key, parseErr := parseS3BackedURL(mCtx)
+	bucket, key, parseErr := parseCOSBackedURL(mCtx)
 	if parseErr != nil {
 		logging.Warnf("Failed to parse S3 backend URL, skipping state cleanup: %v", parseErr)
 		return nil
