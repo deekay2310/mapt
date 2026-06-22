@@ -1,0 +1,19 @@
+name: smoke-test-selfhosted
+
+on:
+  workflow_dispatch:
+    inputs:
+      arch:
+        description: Target architecture
+        required: true
+        type: choice
+        options:
+          - s390x
+          - ppc64le
+
+jobs:
+  smoke:
+    runs-on: [self-hosted, "${{ inputs.arch }}"]                                                                                                                                                                                                           
+    steps:
+      - name: System info
+        run: uname -m && cat /etc/os-release && whoami && df -h / && free -h
